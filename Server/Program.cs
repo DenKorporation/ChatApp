@@ -1,27 +1,26 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
+ 
 
 
-
-IPEndPoint server;
-using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+IPEndPoint serverIp;
 
 bool isConnected = false;
+
+ServerObject server = new ServerObject();// создаем сервер
 
 while (!isConnected)
 {
     Console.WriteLine("Choose EndPoint: ");
-    while (!IPEndPoint.TryParse(Console.ReadLine(), out server))
+    while (!IPEndPoint.TryParse(Console.ReadLine(), out serverIp))
     {
         Console.WriteLine("Try again");
     }
 
-    Console.WriteLine($"server: {server}. Trying start listening...");
+    Console.WriteLine($"server: {serverIp}. Trying start listening...");
     try
     {
-        socket.Bind(server);
-        socket.Listen();
+        server.tcpListener = new TcpListener(serverIp);
         Console.WriteLine("Listening started");
         isConnected = true;
     }
@@ -35,26 +34,136 @@ while (!isConnected)
     }
 }
 
-while (true)
+await server.ListenAsync(); // запускаем сервер
+ 
+class ServerObject
 {
-    using Socket clientSocket = socket.Accept();
-    Console.WriteLine("Connection successfully");
+    public TcpListener tcpListener;// = new TcpListener(IPAddress.Any, 8888); // сервер для прослушивания
+    List<ClientObject> clients = new List<ClientObject>(); // все подключения
     
-    StringBuilder recieveMessage = new StringBuilder();
-    int bytesRead = 0;
-    byte[] buffer = new byte[256];
-    
-    do
+    protected internal void RemoveConnection(string id)
     {
-        bytesRead = clientSocket.Receive(buffer);
-        string text = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-        recieveMessage.Append(text);
-    } while (bytesRead > 0);
-
-    Console.WriteLine($"{DateTime.Now.ToShortTimeString()}: {recieveMessage}");
-    
-    byte[] outputMessage = Encoding.UTF8.GetBytes("message received");
-    clientSocket.Send(outputMessage);
-        
-    clientSocket.Shutdown(SocketShutdown.Both);
+        // получаем по id закрытое подключение
+        ClientObject? client = clients.FirstOrDefault(c => c.Id == id);
+        // и удаляем его из списка подключений
+        if (client != null) clients.Remove(client);
+        client?.Close();
+    }
+    // прослушивание входящих подключений
+    protected internal async Task ListenAsync()
+    {
+        try
+        {
+            tcpListener.Start();
+            Console.WriteLine("Сервер запущен. Ожидание подключений...");
+ 
+            while (true)
+            {
+                TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
+ 
+                ClientObject clientObject = new ClientObject(tcpClient, this);
+                clients.Add(clientObject);
+                Task.Run(clientObject.ProcessAsync);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            Disconnect();
+        }
+    }
+ 
+    // трансляция сообщения подключенным клиентам
+    protected internal async Task BroadcastMessageAsync(string message, string id)
+    {
+        foreach (var client in  clients)
+        {
+            if (client.Id != id) // если id клиента не равно id отправителя
+            {
+                await client.Writer.WriteLineAsync(message); //передача данных
+                await client.Writer.FlushAsync();
+            }
+        }
+    }
+    // отключение всех клиентов
+    protected internal void Disconnect()
+    {
+        foreach (var client in clients)
+        {
+            client.Close(); //отключение клиента
+        }
+        tcpListener.Stop(); //остановка сервера
+    }
+}
+class ClientObject
+{
+    protected internal string Id { get;} = Guid.NewGuid().ToString();
+    protected internal StreamWriter Writer { get;}
+    protected internal StreamReader Reader { get;}
+ 
+    TcpClient client;
+    ServerObject server; // объект сервера
+ 
+    public ClientObject(TcpClient tcpClient, ServerObject serverObject)
+    {
+        client = tcpClient;
+        server = serverObject;
+        // получаем NetworkStream для взаимодействия с сервером
+        var stream = client.GetStream();
+        // создаем StreamReader для чтения данных
+        Reader = new StreamReader(stream);
+        // создаем StreamWriter для отправки данных
+        Writer = new StreamWriter(stream);
+    }
+ 
+    public async Task ProcessAsync()
+    {
+        try
+        {
+            // получаем имя пользователя
+            string? userName = await Reader.ReadLineAsync();
+            string? message = $"{userName} вошел в чат";
+            // посылаем сообщение о входе в чат всем подключенным пользователям
+            await server.BroadcastMessageAsync(message, Id);
+            Console.WriteLine(message);
+            // в бесконечном цикле получаем сообщения от клиента
+            while (true)
+            {
+                try
+                {
+                    message = await Reader.ReadLineAsync();
+                    if (message == null) continue;
+                    message = $"{userName}: {message}";
+                    Console.WriteLine(message);
+                    await server.BroadcastMessageAsync(message, Id);
+                }
+                catch
+                {
+                    message = $"{userName} покинул чат";
+                    Console.WriteLine(message);
+                    await server.BroadcastMessageAsync(message, Id);
+                    break;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        finally
+        {
+            // в случае выхода из цикла закрываем ресурсы
+            server.RemoveConnection(Id);
+        }
+    }
+    // закрытие подключения
+    protected internal void Close()
+    {
+        Writer.Close();
+        Reader.Close();
+        client.Close();
+    }
 }

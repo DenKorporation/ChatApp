@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:chatApp="clr-namespace:chatApp"
+             x:Class="chatApp.MessageTemplate">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentView.Resources>
+    <Grid HorizontalOptions="End" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="Auto" x:DataType="chatApp:Message" Margin="10, 10, 10, 5">
+        <BoxView Grid.RowSpan="3" CornerRadius="15" Color="#404040"></BoxView>
+        <Label Text="{Binding Sender}"
+               HorizontalOptions="Start" 
+               Padding="10, 5, 10, 3"
+               TextColor="DarkOrange"/>
+        <Label Grid.Row="1" Text="{Binding Text}"
+               HorizontalOptions="Start" 
+               Padding="10, 0, 10, 3"/>
+        <Label Grid.Row="2" Text="{Binding Time}"
+               HorizontalOptions="End" 
+               Padding="10, 0, 10, 5"
+               TextColor="#919191"
+               FontSize="12"/>
+                
+    </Grid>
+</ContentView>

@@ -1,23 +1,26 @@
-﻿namespace chatApp;
+﻿using System.Collections.ObjectModel;
+
+namespace chatApp;
 
 public partial class MainPage : ContentPage
 {
-    int count = 0;
+    public ObservableCollection<Message> ChatHistory = new();
 
     public MainPage()
     {
         InitializeComponent();
+
+        ChatView.ItemsSource = ChatHistory;
     }
 
-    private void OnCounterClicked(object sender, EventArgs e)
+    private void EntryField_OnCompleted(object sender, EventArgs e)
     {
-        count++;
-
-        if (count == 1)
-            CounterBtn.Text = $"Clicked {count} time";
-        else
-            CounterBtn.Text = $"Clicked {count} times";
-
-        SemanticScreenReader.Announce(CounterBtn.Text);
+        if ((EntryField.Text ?? "") != "")
+        {
+            ChatHistory.Add(new Message(EntryField.Text, "anonymous"));
+            // ChatHistory.Add(EntryField.Text);
+            ChatView.ScrollTo(ChatHistory.Last(x => x.Text == EntryField.Text), position: ScrollToPosition.End);
+            EntryField.Text = "";
+        }
     }
 }
