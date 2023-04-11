@@ -7,7 +7,7 @@ IPEndPoint serverIp;
 
 bool isConnected = false;
 
-ServerObject server = new ServerObject();// создаем сервер
+ServerObject server = new ServerObject(); // создаем сервер
 
 while (!isConnected)
 {

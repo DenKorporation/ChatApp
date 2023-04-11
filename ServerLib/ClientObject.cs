@@ -1,25 +1,24 @@
 ﻿using System.Net.Sockets;
+using System.Text.Json;
 
 namespace ServerLib;
 
 class ClientObject
 {
     protected internal string Id { get;} = Guid.NewGuid().ToString();
+    internal string userName = "";
     protected internal StreamWriter Writer { get;}
     protected internal StreamReader Reader { get;}
  
     TcpClient client;
-    ServerObject server; // объект сервера
- 
+    ServerObject server;
+
     public ClientObject(TcpClient tcpClient, ServerObject serverObject)
     {
         client = tcpClient;
         server = serverObject;
-        // получаем NetworkStream для взаимодействия с сервером
         var stream = client.GetStream();
-        // создаем StreamReader для чтения данных
         Reader = new StreamReader(stream);
-        // создаем StreamWriter для отправки данных
         Writer = new StreamWriter(stream);
     }
  
@@ -27,28 +26,32 @@ class ClientObject
     {
         try
         {
-            // получаем имя пользователя
-            string? userName = await Reader.ReadLineAsync();
-            string? message = $"{userName} вошел в чат";
-            // посылаем сообщение о входе в чат всем подключенным пользователям
+            string? message = await Reader.ReadLineAsync();
+            Message receivedMessage = JsonSerializer.Deserialize<Message>(message);
+            userName = receivedMessage.Sender;
+            receivedMessage.Text = $"{userName} вошел в чат";
+            receivedMessage.Time = DateTime.Now.ToShortTimeString();
+            message = JsonSerializer.Serialize(receivedMessage);
             await server.BroadcastMessageAsync(message, Id);
             Console.WriteLine(message);
-            // в бесконечном цикле получаем сообщения от клиента
             while (true)
             {
                 try
                 {
                     message = await Reader.ReadLineAsync();
                     if (message == null) continue;
-                    message = $"{userName}: {message}";
-                    Console.WriteLine(message);
+                    receivedMessage = JsonSerializer.Deserialize<Message>(message);
+                    receivedMessage.Time = DateTime.Now.ToShortTimeString();
+                    message = JsonSerializer.Serialize(receivedMessage);
                     await server.BroadcastMessageAsync(message, Id);
+                    Console.WriteLine(message);
                 }
                 catch
                 {
-                    message = $"{userName} покинул чат";
-                    Console.WriteLine(message);
+                    Message sendMessage = new Message(userName, $"{userName} покинул чат", DateTime.Now.ToShortTimeString(), true);
+                    message = JsonSerializer.Serialize(sendMessage);
                     await server.BroadcastMessageAsync(message, Id);
+                    Console.WriteLine(message);
                     break;
                 }
             }
@@ -59,11 +62,9 @@ class ClientObject
         }
         finally
         {
-            // в случае выхода из цикла закрываем ресурсы
             server.RemoveConnection(Id);
         }
     }
-    // закрытие подключения
     protected internal void Close()
     {
         Writer.Close();

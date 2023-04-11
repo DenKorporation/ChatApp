@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace chatApp;
 
-public partial class MessageTemplate : ContentView
+public partial class SenderMessageTemplate : ContentView
 {
-    public MessageTemplate()
+    public SenderMessageTemplate()
     {
         InitializeComponent();
     }

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:chatApp"
+             x:Class="chatApp.MainView"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <DataTemplate x:Key="SenderMessageItemTemplate">
+            <local:SenderMessageTemplate />
+        </DataTemplate>
+
+        <DataTemplate x:Key="ReceiverMessageItemTemplate">
+            <local:ReceiverMessageTemplate />
+        </DataTemplate>
+        
+        <DataTemplate x:Key="ServiceMessageItemTemplate">
+            <local:ServiceMessageTemplate/>
+        </DataTemplate>
+
+        <local:MessageTemplateSelector 
+            x:Key="MessageTemplateSelector"             
+            SenderMessageTemplate="{StaticResource SenderMessageItemTemplate}"    
+            ReceiverMessageTemplate="{StaticResource ReceiverMessageItemTemplate}"
+            ServiceMessageTemplate="{StaticResource ServiceMessageItemTemplate}"/>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <Grid RowDefinitions="*, Auto">
+            <CollectionView x:Name="ChatView"
+                            BackgroundColor="Black" Grid.Row="0" Margin="10,10,10,10"
+                            ItemsSource="{Binding ChatHistory}"
+                            ItemTemplate="{StaticResource MessageTemplateSelector}"
+                            PropertyChanged="ChatView_OnPropertyChanged" />
+            <Entry Text="{Binding EntryText}" Grid.Row="1" Placeholder="Enter a message" Margin="10,0,10,10"
+                   Completed="Entry_OnCompleted" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

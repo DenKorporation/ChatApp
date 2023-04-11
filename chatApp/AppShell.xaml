@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <Shell
-    x:Class="chatApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:chatApp"
+    xmlns:view="clr-namespace:chatApp"
+    x:Class="chatApp.AppShell"
     Shell.FlyoutBehavior="Flyout"
     Shell.IsVisible="True">
     
     <ShellContent Title="Chat"
                   Icon="chat_icon.png"
-                  ContentTemplate="{DataTemplate local:MainPage}" 
+                  ContentTemplate="{DataTemplate view:MainView}" 
                   Route="Main"/>
 
     <ShellContent Title="Settings"
                   Icon="settings_icon.png"
-                  ContentTemplate="{DataTemplate local:SettingsPage}" 
+                  ContentTemplate="{DataTemplate view:SettingsView}" 
                   Route="Settings"/>
 </Shell>

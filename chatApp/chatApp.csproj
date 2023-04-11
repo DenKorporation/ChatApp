@@ -53,4 +53,35 @@
       <Folder Include="Resources\Images" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ClientLib\ClientLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <MauiXaml Update="View\MainView.xaml">
+        <SubType>Designer</SubType>
+      </MauiXaml>
+      <MauiXaml Update="View\SettingsView.xaml">
+        <SubType>Designer</SubType>
+      </MauiXaml>
+      <MauiXaml Update="View\Template\ReceiverMessageTemplate.xaml">
+        <SubType>Designer</SubType>
+      </MauiXaml>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="View\MainView.xaml.cs">
+        <DependentUpon>MainPage.xaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="View\SettingsView.xaml.cs">
+        <DependentUpon>SettingsPage.xaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="View\Template\ReceiverMessageTemplate.xaml.cs">
+        <DependentUpon>MessageTemplate.xaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+
 </Project>
