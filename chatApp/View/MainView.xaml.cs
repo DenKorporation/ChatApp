@@ -1,14 +1,17 @@
 ﻿using System.ComponentModel;
+using chatApp.Services;
 using chatApp.ViewModel;
 
 namespace chatApp;
 
 public partial class MainView : ContentPage
 {
-    public MainView(MainViewModel viewModel)
+    public MainView(MainViewModel viewModel, MessageService service)
     {
         BindingContext = viewModel;
         InitializeComponent();
+
+        MessageTemplateSelector.Service = service;
     }
     private void Entry_OnCompleted(object sender, EventArgs e)
     {
@@ -21,7 +24,7 @@ public partial class MainView : ContentPage
         MainViewModel viewModel = BindingContext as MainViewModel;
         if (viewModel.ChatHistory.Count > 0)
         {
-            ChatView.ScrollTo(viewModel.ChatHistory.LastOrDefault(), position: ScrollToPosition.End);
+            ChatView.ScrollTo(viewModel.ChatHistory.Count - 1);
         }
     }
 }

@@ -17,8 +17,6 @@ public class ServerObject
     {
         try
         {
-            tcpListener.Start();
-            
             while (true)
             {
                 TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();

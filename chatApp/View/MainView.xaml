@@ -20,6 +20,7 @@
         </DataTemplate>
 
         <local:MessageTemplateSelector 
+            x:Name="MessageTemplateSelector"
             x:Key="MessageTemplateSelector"             
             SenderMessageTemplate="{StaticResource SenderMessageItemTemplate}"    
             ReceiverMessageTemplate="{StaticResource ReceiverMessageItemTemplate}"
@@ -31,7 +32,9 @@
                             BackgroundColor="Black" Grid.Row="0" Margin="10,10,10,10"
                             ItemsSource="{Binding ChatHistory}"
                             ItemTemplate="{StaticResource MessageTemplateSelector}"
-                            PropertyChanged="ChatView_OnPropertyChanged" />
+                            />
+            <!-- PropertyChanged="ChatView_OnPropertyChanged"  -->
+            <!-- ItemsUpdatingScrollMode="KeepLastItemInView" -->
             <Entry Text="{Binding EntryText}" Grid.Row="1" Placeholder="Enter a message" Margin="10,0,10,10"
                    Completed="Entry_OnCompleted" />
         </Grid>

@@ -4,6 +4,8 @@ namespace chatApp;
 
 public class MessageTemplateSelector: DataTemplateSelector
 {
+    public MessageService Service { get; set; }
+    
     public DataTemplate SenderMessageTemplate { get; set; }
     public DataTemplate ReceiverMessageTemplate { get; set; }
     public DataTemplate ServiceMessageTemplate { get; set; }
@@ -16,7 +18,7 @@ public class MessageTemplateSelector: DataTemplateSelector
         {
             return ServiceMessageTemplate;
         }
-        if (message.Sender != "")
+        if (message.Sender == Service.Name)
         {
             return SenderMessageTemplate;
         }

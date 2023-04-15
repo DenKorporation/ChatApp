@@ -42,25 +42,30 @@ public class Client
     
     public async Task SendMessageAsync(string message)
     {
-        await writer?.WriteLineAsync(message);
-        await writer?.FlushAsync();
+        if (Connected)
+        {
+            await writer.WriteLineAsync(message);
+            await writer.FlushAsync();
+        }
     }
     
     public async Task<string?> ReceiveMessageAsync()
     {
-        while (true)
+        if (Connected)
         {
-            try
+            while (true)
             {
-                string? message = await reader?.ReadLineAsync();
-                if (!string.IsNullOrEmpty(message)) return message;
-            }
-            catch
-            {
-                break;
+                try
+                {
+                    string? message = await reader?.ReadLineAsync();
+                    if (!string.IsNullOrEmpty(message)) return message;
+                }
+                catch
+                {
+                    break;
+                }
             }
         }
-
         return null;
     }
 
